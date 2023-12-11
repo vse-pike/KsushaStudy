@@ -57,7 +57,6 @@ test('Регистрация: попытка создания пользоват
     const passwordHash = await generatePasswordHash(password);
     const userRecord = {
         UserId: uuid.v4(),
-        //UserId: "76ea354e-73d1-4359-aecd-0c93c3f933ef",
         Name: "Max",
         Login: `login${getRandomInt()}@email.com`,
         PasswordHash: passwordHash ,
@@ -89,7 +88,6 @@ test('Регистрация: попытка создания пользоват
         };
     const response = await axios.post('http://localhost:8080/api/v1/registry', userData, options);
     expect(response.status).toBe(400);
-    //expect(userData.login).not.toMatch(/^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[ru]+$/);
     expect(response.data[0].code).toBe("InvalidEmailFormat");
     await client.destroy();
 });
@@ -106,7 +104,6 @@ test('Регистрация: попытка создания пользоват
         };
     const response = await axios.post('http://localhost:8080/api/v1/registry', userData, options);
     expect(response.status).toBe(400);
-    //expect(userData.login).not.toMatch(/^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[ru]+$/);
     expect(response.data[0].code).toBe("InvalidEmailFormat");
     await client.destroy();
 });
@@ -123,7 +120,6 @@ test('Регистрация: попытка создания пользоват
         };
     const response = await axios.post('http://localhost:8080/api/v1/registry', userData, options);
     expect(response.status).toBe(400);
-    //expect(userData.login).not.toMatch(/^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[ru]+$/);
     expect(response.data[0].code).toBe("InvalidEmailFormat");
     await client.destroy();
 });
@@ -140,7 +136,6 @@ test('Регистрация: попытка создания пользоват
         };
     const response = await axios.post('http://localhost:8080/api/v1/registry', userData, options);
     expect(response.status).toBe(400);
-    //expect(userData.login).not.toMatch(/^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[ru]+$/);
     expect(response.data[0].code).toBe("InvalidEmailFormat");
     await client.destroy();
 });
@@ -157,7 +152,6 @@ test('Регистрация: попытка создания пользоват
         };
     const response = await axios.post('http://localhost:8080/api/v1/registry', userData, options);
     expect(response.status).toBe(400);
-    //expect(userData.login).not.toMatch(/^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[ru]+$/);
     expect(response.data[0].code).toBe("InvalidEmailFormat");
     await client.destroy();
 });
@@ -173,7 +167,6 @@ test('Регистрация: попытка создания пользоват
         };
     const response = await axios.post('http://localhost:8080/api/v1/registry', userData, options);
     expect(response.status).toBe(400);
-    //expect(userData.password).not.toHaveLength(8);
     expect(response.data[0].code).toBe("PasswordTooShort");
     await client.destroy();
 });
@@ -327,7 +320,6 @@ test('Регистрация: попытка создания пользоват
     expect(response.data.code).toBe("ModelException");
     await client.destroy();
 });
-
 
 test('Регистрация: попытка создания пользователя только с пробелом в login', async () => {
     const client = createDbClient();
@@ -512,14 +504,5 @@ test('Регистрация: проверка валидного запроса
     expect(result).toBe(true);
     await client.destroy();
 });
-
-
-
-
-
-
-
-
-
 
 
