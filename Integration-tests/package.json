@@ -1,0 +1,29 @@
+{
+  "name": "integration-tests",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/jest": "^29.5.11",
+    "axios": "^1.6.0",
+    "bcryptjs": "^2.4.3",
+    "jest-jasmine2": "^29.7.0",
+    "knex": "^3.0.1",
+    "pg": "^8.11.3",
+    "uuid": "^9.0.1"
+  },
+  "jest": {
+    "testMatch": [
+      "**/*.test.js"
+    ],
+    "testRunner": "jest-jasmine2"
+  }
+}

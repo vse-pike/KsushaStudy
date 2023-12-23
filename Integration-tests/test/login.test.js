@@ -1,15 +1,10 @@
-const axios = require("axios");
 const {setUserAuthToDatabase, setUserRecordToDatabase, getUserAuthFromDatabase} = require("../main/db-utils");
 const {createDbClient} = require("../main/db-client");
 const {checkPasswordHash, generatePasswordHash} = require("../main/bcryptjs");
 const {getRandomInt} = require("../main/utils");
 const uuid = require('uuid');
-const options = {
-    validateStatus: function (status) {
-        return status < 500; // Разрешить, если код состояния меньше 500
-    }
-
-};
+const {Api} = require("../main/api/apiMethods");
+const path = "/api/v1/login";
 
 test('Авторизация: проверка валидной комбинации login/password', async () => {
     const client = createDbClient();
@@ -28,11 +23,11 @@ test('Авторизация: проверка валидной комбинац
         password: password
     };
 
-    const response = await axios.post('http://localhost:8080/api/v1/login', userAuth, options);
+    const response = await Api.postRequest(path, userAuth);
     expect(response.status).toBe(200);
     const userToken = await getUserAuthFromDatabase(client, userAuth.login);
     expect(response.data.accessToken).toBeDefined();
-    await client.destroy();
+    
 });
 
 test('Авторизация: проверка accessToken на соответствие формату uuid', async () => {
@@ -51,11 +46,11 @@ test('Авторизация: проверка accessToken на соответс
         login: userRecord.Login,
         password: password
     };
-    const response = await axios.post('http://localhost:8080/api/v1/login', userAuth, options);
+    const response = await Api.postRequest(path, userAuth);
     const userToken = await getUserAuthFromDatabase(client, userAuth.login);
     expect(response.data.accessToken).toBe(userToken.Token);
     expect(userToken.Token).toMatch(/^[0-9A-F]{8}-[0-9A-F]{4}-[4][0-9A-F]{3}-[0-9A-F]{4}-[0-9A-F]{12}$/i);
-    await client.destroy();
+    
 });
 
 test('Авторизация: проверка времени жизни токена', async () => {
@@ -77,10 +72,10 @@ test('Авторизация: проверка времени жизни ток�
         password: password
     };
 
-    const response = await axios.post('http://localhost:8080/api/v1/login', userAuth, options);
+    const response = await Api.postRequest(path, userAuth);
     const userToken = await getUserAuthFromDatabase(client, userAuth.login);
     expect(userToken.ExpirationDateTime).toBe(timeNow);
-    await client.destroy();
+    
 });
 
 test('Авторизация: попытка входа с несуществующим логином', async () => {
@@ -90,10 +85,10 @@ test('Авторизация: попытка входа с несуществу�
         password: "Qwerty123!"
     };
 
-    const response = await axios.post('http://localhost:8080/api/v1/login', userAuth, options);
+    const response = await Api.postRequest(path, userAuth);
     expect(response.status).toBe(400);
     expect(response.data[0].code).toBe("InvalidCredentials");
-    await client.destroy();
+    
 });
 
 test('Авторизация: попытка входа с несуществующим паролем для валидного логина', async () => {
@@ -114,10 +109,10 @@ test('Авторизация: попытка входа с несуществу�
     };
 
 
-    const response = await axios.post('http://localhost:8080/api/v1/login', userAuth, options);
+    const response = await Api.postRequest(path, userAuth);
     expect(response.status).toBe(400);
     expect(response.data[0].code).toBe("InvalidCredentials");
-    await client.destroy();
+    
 });
 
 test('Авторизация: попытка входа с пустым полем логин', async () => {
@@ -127,10 +122,10 @@ test('Авторизация: попытка входа с пустым поле
         password: "Qwerty123!"
     };
 
-    const response = await axios.post('http://localhost:8080/api/v1/login', userAuth, options);
+    const response = await Api.postRequest(path, userAuth);
     expect(response.status).toBe(400);
     expect(response.data.code).toBe("ModelException");
-    await client.destroy();
+    
 });
 
 test('Авторизация: попытка входа с пустым полем пароль', async () => {
@@ -140,10 +135,10 @@ test('Авторизация: попытка входа с пустым поле
         password: ""
     };
 
-    const response = await axios.post('http://localhost:8080/api/v1/login', userAuth, options);
+    const response = await Api.postRequest(path, userAuth);
     expect(response.status).toBe(400);
     expect(response.data.code).toBe("ModelException");
-    await client.destroy();
+    
 });
 
 test('Авторизация: попытка входа с пробелом в качестве логина', async () => {
@@ -153,10 +148,10 @@ test('Авторизация: попытка входа с пробелом в �
         password: "Qwerty123!"
     };
 
-    const response = await axios.post('http://localhost:8080/api/v1/login', userAuth, options);
+    const response = await Api.postRequest(path, userAuth);
     expect(response.status).toBe(400);
     expect(response.data.code).toBe("ModelException");
-    await client.destroy();
+    
 });
 
 test('Авторизация: попытка входа с пробелом в качестве пароля', async () => {
@@ -166,10 +161,10 @@ test('Авторизация: попытка входа с пробелом в �
         password: " "
     };
 
-    const response = await axios.post('http://localhost:8080/api/v1/login', userAuth, options);
+    const response = await Api.postRequest(path, userAuth);
     expect(response.status).toBe(400);
     expect(response.data.code).toBe("ModelException");
-    await client.destroy();
+    
 });
 
 test('Авторизация: проверка повторной авторизации', async () => {
@@ -198,8 +193,8 @@ test('Авторизация: проверка повторной авториз
         password: password
     };
 
-    const response = await axios.post('http://localhost:8080/api/v1/login', userAuth, options);
+    const response = await Api.postRequest(path, userAuth);
     expect(response.status).toBe(200);
     expect(userToken.ExpirationDateTime).toBe(timeNow);
-    await client.destroy();
+    
 });
