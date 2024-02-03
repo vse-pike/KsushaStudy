@@ -4,24 +4,23 @@ const {checkPasswordHash, generatePasswordHash} = require("../main/bcryptjs");
 const {getRandomInt} = require("../main/utils");
 const uuid = require('uuid');
 const {Api} = require("../main/api/apiMethods");
+const {UserRecordBuilder, UserAuthBuilder, UserTokenBuilder} = require("../main/builder/builder");
 const path = "/api/v1/login";
 
 test('Авторизация: проверка валидной комбинации login/password', async () => {
     const client = createDbClient();
     const password = "Qwerty123!";
     const passwordHash = await generatePasswordHash(password);
-    const userRecord = {
-        UserId: uuid.v4(),
-        Name: "Max",
-        Login: `login${getRandomInt()}@email.com`,
-        PasswordHash: passwordHash ,
-        Role: "renter"
-    };
+    const userRecord = new UserRecordBuilder()
+        .UserId(uuid.v4())
+        .Name("Max")
+        .Login(`login${getRandomInt()}@email.com`)
+        .PasswordHash(passwordHash)
+        .Role("renter")
     await setUserRecordToDatabase(client, userRecord);
-    const userAuth = {
-        login: userRecord.Login,
-        password: password
-    };
+    const userAuth = new UserAuthBuilder()
+        .login(userRecord.Login)
+        .password(password)
 
     const response = await Api.postRequest(path, userAuth);
     expect(response.status).toBe(200);
@@ -34,18 +33,16 @@ test('Авторизация: проверка accessToken на соответс
     const client = createDbClient();
     const password = "Qwerty123!";
     const passwordHash = await generatePasswordHash(password);
-    const userRecord = {
-        UserId: uuid.v4(),
-        Name: "Max",
-        Login: `login${getRandomInt()}@email.com`,
-        PasswordHash: passwordHash ,
-        Role: "renter"
-    };
+    const userRecord = new UserRecordBuilder()
+        .UserId(uuid.v4())
+        .Name("Max")
+        .Login(`login${getRandomInt()}@email.com`)
+        .PasswordHash(passwordHash)
+        .Role("renter")
     await setUserRecordToDatabase(client, userRecord);
-    const userAuth = {
-        login: userRecord.Login,
-        password: password
-    };
+    const userAuth = new UserAuthBuilder()
+        .login(userRecord.Login)
+        .password(password)
     const response = await Api.postRequest(path, userAuth);
     const userToken = await getUserAuthFromDatabase(client, userAuth.login);
     expect(response.data.accessToken).toBe(userToken.Token);
@@ -59,18 +56,16 @@ test('Авторизация: проверка времени жизни ток�
     const passwordHash = await generatePasswordHash(password);
     let timeNow = new Date();
     timeNow.setMinutes(timeNow.getMinutes() + 15);
-    const userRecord = {
-        UserId: uuid.v4(),
-        Name: "Max",
-        Login: `login${getRandomInt()}@email.com`,
-        PasswordHash: passwordHash,
-        Role: "renter"
-    };
+    const userRecord = new UserRecordBuilder()
+        .UserId(uuid.v4())
+        .Name("Max")
+        .Login(`login${getRandomInt()}@email.com`)
+        .PasswordHash(passwordHash)
+        .Role("renter")
     await setUserRecordToDatabase(client, userRecord);
-    const userAuth = {
-        login: userRecord.Login,
-        password: password
-    };
+    const userAuth = new UserAuthBuilder()
+        .login(userRecord.Login)
+        .password(password)
 
     const response = await Api.postRequest(path, userAuth);
     const userToken = await getUserAuthFromDatabase(client, userAuth.login);
@@ -80,10 +75,9 @@ test('Авторизация: проверка времени жизни ток�
 
 test('Авторизация: попытка входа с несуществующим логином', async () => {
     const client = createDbClient();
-    const userAuth = {
-        login: "non_existent@email.ru",
-        password: "Qwerty123!"
-    };
+    const userAuth = new UserAuthBuilder()
+        .login("non_existent@email.ru")
+        .password("Qwerty123!")
 
     const response = await Api.postRequest(path, userAuth);
     expect(response.status).toBe(400);
@@ -95,19 +89,16 @@ test('Авторизация: попытка входа с несуществу�
     const client = createDbClient();
     const password = "Qwerty123!";
     const passwordHash = await generatePasswordHash(password);
-    const userRecord = {
-        UserId: uuid.v4(),
-        Name: "Max",
-        Login: `login${getRandomInt()}@email.com`,
-        PasswordHash: passwordHash,
-        Role: "renter"
-    };
+    const userRecord = new UserRecordBuilder()
+        .UserId(uuid.v4())
+        .Name("Max")
+        .Login(`login${getRandomInt()}@email.com`)
+        .PasswordHash(passwordHash)
+        .Role("renter")
     await setUserRecordToDatabase(client, userRecord);
-    const userAuth = {
-        login: userRecord.Login,
-        password: "Password123!"
-    };
-
+    const userAuth = new UserAuthBuilder()
+        .login(userRecord.Login)
+        .password("Password123!!")
 
     const response = await Api.postRequest(path, userAuth);
     expect(response.status).toBe(400);
@@ -117,10 +108,9 @@ test('Авторизация: попытка входа с несуществу�
 
 test('Авторизация: попытка входа с пустым полем логин', async () => {
     const client = createDbClient();
-    const userAuth = {
-        login: "",
-        password: "Qwerty123!"
-    };
+    const userAuth = new UserAuthBuilder()
+        .login('')
+        .password("Password123!!")
 
     const response = await Api.postRequest(path, userAuth);
     expect(response.status).toBe(400);
@@ -130,10 +120,9 @@ test('Авторизация: попытка входа с пустым поле
 
 test('Авторизация: попытка входа с пустым полем пароль', async () => {
     const client = createDbClient();
-    const userAuth = {
-        login: "login@email.com",
-        password: ""
-    };
+    const userAuth = new UserAuthBuilder()
+        .login("login@email.com")
+        .password("")
 
     const response = await Api.postRequest(path, userAuth);
     expect(response.status).toBe(400);
@@ -143,10 +132,9 @@ test('Авторизация: попытка входа с пустым поле
 
 test('Авторизация: попытка входа с пробелом в качестве логина', async () => {
     const client = createDbClient();
-    const userAuth = {
-        login: " ",
-        password: "Qwerty123!"
-    };
+    const userAuth = new UserAuthBuilder()
+        .login(" ")
+        .password("Qwerty123!")
 
     const response = await Api.postRequest(path, userAuth);
     expect(response.status).toBe(400);
@@ -156,10 +144,9 @@ test('Авторизация: попытка входа с пробелом в �
 
 test('Авторизация: попытка входа с пробелом в качестве пароля', async () => {
     const client = createDbClient();
-    const userAuth = {
-        login: "login@email.com",
-        password: " "
-    };
+    const userAuth = new UserAuthBuilder()
+        .login("login@email.com")
+        .password(" ")
 
     const response = await Api.postRequest(path, userAuth);
     expect(response.status).toBe(400);
@@ -173,25 +160,22 @@ test('Авторизация: проверка повторной авториз
     const passwordHash = await generatePasswordHash(password);
     let timeNow = new Date();
     timeNow.setMinutes(timeNow.getMinutes() + 15);
-    const userRecord = {
-        UserId: uuid.v4(),
-        Name: "Max",
-        Login: `login${getRandomInt()}@email.com`,
-        PasswordHash: passwordHash ,
-        Role: "renter"
-    };
+    const userRecord = new UserRecordBuilder()
+        .UserId(uuid.v4())
+        .Name("Max")
+        .Login(`login${getRandomInt()}@email.com`)
+        .PasswordHash(passwordHash)
+        .Role("renter")
     await setUserRecordToDatabase(client, userRecord);
 
-    const userToken ={
-        UserId: userRecord.UserId,
-        Token: uuid.v4(),
-        ExpirationDateTime: timeNow
-    }
+    const userToken = new UserTokenBuilder()
+        .UserId(userRecord.UserId)
+        .Token(uuid.v4())
+        .ExpirationDateTime(timeNow)
     await setUserAuthToDatabase(client, userToken);
-    const userAuth = {
-        login: userRecord.Login,
-        password: password
-    };
+    const userAuth = new UserAuthBuilder()
+        .login(userRecord.Login)
+        .password(password)
 
     const response = await Api.postRequest(path, userAuth);
     expect(response.status).toBe(200);
