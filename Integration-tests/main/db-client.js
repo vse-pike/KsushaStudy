@@ -11,9 +11,13 @@ function createDbClient(){
         }
 
     }
-    return knex(dbConfig);
-
+    const dbClient = knex(dbConfig);
+    afterAll(async()=> {
+        await dbClient.destroy();
+    });
+    return dbClient;
 }
+
 module.exports={
     createDbClient
 }
