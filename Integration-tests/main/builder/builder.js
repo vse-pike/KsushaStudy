@@ -67,6 +67,11 @@ class UserRecordBuilder {
         return  this;
     }
 
+    withRole(Role) {
+        this.Role = Role;
+        return this;
+    }
+
     build() {
         return {
             UserId:  this.UserId,
@@ -122,6 +127,14 @@ class UserTokenBuilder{
     withExpirationDateTime(ExpirationDateTime){
         this.ExpirationDateTime = ExpirationDateTime;
         return this;
+    }
+
+    build() {
+        return {
+            UserId: this.UserId,
+            Token: this.Token,
+            ExpirationDateTime: this.ExpirationDateTime
+        }
     }
 }
 

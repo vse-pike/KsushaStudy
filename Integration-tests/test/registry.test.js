@@ -9,12 +9,12 @@ const path = "/api/v1/registry";
 
 describe('Тесты регистрации', () => {
     let client;
-beforeAll( () => {
-    client = createDbClient();
-});
+    beforeAll(() => {
+        client = createDbClient();
+    });
 
     test('Регистрация: проверка валидного запроса с role = client', async () => {
-        
+
         const userData = new UserDataBuilder()
             .withLogin(`login${getRandomInt()}@email.com`)
             .withPassword('Qwerty123!')
@@ -34,12 +34,12 @@ beforeAll( () => {
     });
 
     test('Регистрация: проверка валидного запроса с role = renter', async () => {
-       
+
         const userData = new UserDataBuilder()
-            .login(`login${getRandomInt()}@email.com`)
-            .password('Qwerty123!')
-            .name("Max")
-            .role("client")
+            .withLogin(`login${getRandomInt()}@email.com`)
+            .withPassword('Qwerty123!')
+            .withName("Max")
+            .withRole("renter")
         const response = await Api.postRequest(path, userData);
         expect(response.status).toBe(200);
         const userRecord = await getUserRecordFromDatabase(client, userData.login);
@@ -52,22 +52,24 @@ beforeAll( () => {
     });
 
     test('Регистрация: попытка создания пользователя с существующим логином', async () => {
-       
+
         const password = "Qwerty123!";
         const passwordHash = await generatePasswordHash(password);
         const userRecord = new UserRecordBuilder()
-            .UserId(uuid.v4())
-            .Name("Max")
-            .Login(`login${getRandomInt()}@email.com`)
-            .PasswordHash(passwordHash)
-            .Role("renter")
+            .withUserId(uuid.v4())
+            .withName("Max")
+            .withLogin(`login${getRandomInt()}@email.com`)
+            .withPasswordHash(passwordHash)
+            .withRole("renter")
+            .build();
 
         await setUserRecordToDatabase(client, userRecord);
         const userData = new UserDataBuilder()
-            .login(`login${getRandomInt()}@email.com`)
-            .password('Qwerty123!')
-            .name("Max")
-            .role("client")
+            .withLogin(userRecord.Login)
+            .withPassword('Qwerty123!')
+            .withName("Max")
+            .withRole("client")
+            .build();
         const response = await Api.postRequest(path, userData);
         expect(response.status).toBe(409);
         expect(response.data[0].code).toBe("UserAlreadyExist");
@@ -75,13 +77,14 @@ beforeAll( () => {
     });
 
     test('Регистрация: попытка создания пользователя c невалидным логином без @', async () => {
-       
+
         const invalidLogin = `login${getRandomInt()}email.ru`;
         const userData = new UserDataBuilder()
-            .login(invalidLogin)
-            .password('Qwerty123!')
-            .name("Max")
-            .role("client")
+            .withLogin(invalidLogin)
+            .withPassword('Qwerty123!')
+            .withName("Max")
+            .withRole("client")
+            .build();
         const response = await Api.postRequest(path, userData);
         expect(response.status).toBe(400);
         expect(response.data[0].code).toBe("InvalidEmailFormat");
@@ -89,13 +92,14 @@ beforeAll( () => {
     });
 
     test('Регистрация: попытка создания пользователя c невалидным логином без доменной зоны', async () => {
-       
+
         const invalidLogin = `login${getRandomInt()}@email.`;
         const userData = new UserDataBuilder()
-            .login(invalidLogin)
-            .password('Qwerty123!')
-            .name("Max")
-            .role("client")
+            .withLogin(invalidLogin)
+            .withPassword('Qwerty123!')
+            .withName("Max")
+            .withRole("client")
+            .build();
         const response = await Api.postRequest(path, userData);
         expect(response.status).toBe(400);
         expect(response.data[0].code).toBe("InvalidEmailFormat");
@@ -103,13 +107,14 @@ beforeAll( () => {
     });
 
     test('Регистрация: попытка создания пользователя c невалидным логином без . в доменной части', async () => {
-       
+
         const invalidLogin = `login${getRandomInt()}emailru`;
         const userData = new UserDataBuilder()
-            .login(invalidLogin)
-            .password('Qwerty123!')
-            .name("Max")
-            .role("client")
+            .withLogin(invalidLogin)
+            .withPassword('Qwerty123!')
+            .withName("Max")
+            .withRole("client")
+            .build();
         const response = await Api.postRequest(path, userData);
         expect(response.status).toBe(400);
         expect(response.data[0].code).toBe("InvalidEmailFormat");
@@ -117,13 +122,14 @@ beforeAll( () => {
     });
 
     test('Регистрация: попытка создания пользователя c невалидным логином без доменной части', async () => {
-       
+
         const invalidLogin = `login${getRandomInt()}@`;
         const userData = new UserDataBuilder()
-            .login(invalidLogin)
-            .password('Qwerty123!')
-            .name("Max")
-            .role("client")
+            .withLogin(invalidLogin)
+            .withPassword('Qwerty123!')
+            .withName("Max")
+            .withRole("client")
+            .build();
         const response = await Api.postRequest(path, userData);
         expect(response.status).toBe(400);
         expect(response.data[0].code).toBe("InvalidEmailFormat");
@@ -131,13 +137,14 @@ beforeAll( () => {
     });
 
     test('Регистрация: попытка создания пользователя c невалидным логином без имени пользователя', async () => {
-       
+
         const invalidLogin = `@email.ru`;
         const userData = new UserDataBuilder()
-            .login(invalidLogin)
-            .password('Qwerty123!')
-            .name("Max")
-            .role("client")
+            .withLogin(invalidLogin)
+            .withPassword('Qwerty123!')
+            .withName("Max")
+            .withRole("client")
+            .build();
         const response = await Api.postRequest(path, userData);
         expect(response.status).toBe(400);
         expect(response.data[0].code).toBe("InvalidEmailFormat");
@@ -145,12 +152,13 @@ beforeAll( () => {
     });
 
     test('Регистрация: попытка создания пользователя c паролем менее 8 символов', async () => {
-       
+
         const userData = new UserDataBuilder()
-            .login(`login${getRandomInt()}@email.com`)
-            .password('Qwe123!')
-            .name("Max")
-            .role("client")
+            .withLogin(`login${getRandomInt()}@email.com`)
+            .withPassword('Qwe123!')
+            .withName("Max")
+            .withRole("client")
+            .build();
         const response = await Api.postRequest(path, userData);
         expect(response.status).toBe(400);
         expect(response.data[0].code).toBe("PasswordTooShort");
@@ -158,12 +166,13 @@ beforeAll( () => {
     });
 
     test('Регистрация: попытка создания пользователя c паролем не содержащим заглавную букву', async () => {
-       
+
         const userData = new UserDataBuilder()
-            .login(`login${getRandomInt()}@email.com`)
-            .password('qwerty123!')
-            .name("Max")
-            .role("client")
+            .withLogin(`login${getRandomInt()}@email.com`)
+            .withPassword('qwerty123!')
+            .withName("Max")
+            .withRole("client")
+            .build();
         const response = await Api.postRequest(path, userData);
         expect(response.status).toBe(400);
         expect(response.data[0].code).toBe("PasswordMissingUppercase");
@@ -171,12 +180,13 @@ beforeAll( () => {
     });
 
     test('Регистрация: попытка создания пользователя c паролем не содержащим спецсимвол', async () => {
-       
+
         const userData = new UserDataBuilder()
-            .login(`login${getRandomInt()}@email.com`)
-            .password('Qwerty1234')
-            .name("Max")
-            .role("client")
+            .withLogin(`login${getRandomInt()}@email.com`)
+            .withPassword('Qwerty1234')
+            .withName("Max")
+            .withRole("client")
+            .build();
         const response = await Api.postRequest(path, userData);
         expect(response.status).toBe(400);
         expect(response.data[0].code).toBe("PasswordMissingSpecialCharacter");
@@ -184,12 +194,13 @@ beforeAll( () => {
     });
 
     test('Регистрация: попытка создания пользователя c паролем содержащим в качестве спецсимвола "?"', async () => {
-       
+
         const userData = new UserDataBuilder()
-            .login(`login${getRandomInt()}@email.com`)
-            .password('Qwerty123?')
-            .name("Max")
-            .role("client")
+            .withLogin(`login${getRandomInt()}@email.com`)
+            .withPassword('Qwerty123?')
+            .withName("Max")
+            .withRole("client")
+            .build();
         const response = await Api.postRequest(path, userData);
         expect(response.status).toBe(400);
         expect(response.data[0].code).toBe("PasswordMissingSpecialCharacter");
@@ -197,12 +208,13 @@ beforeAll( () => {
     });
 
     test('Регистрация: попытка создания пользователя c паролем на кириллице', async () => {
-       
+
         const userData = new UserDataBuilder()
-            .login(`login${getRandomInt()}@email.com`)
-            .password('Пароль123!')
-            .name("Max")
-            .role("client")
+            .withLogin(`login${getRandomInt()}@email.com`)
+            .withPassword('Пароль123!')
+            .withName("Max")
+            .withRole("client")
+            .build();
         const response = await Api.postRequest(path, userData);
         expect(response.status).toBe(400);
         expect(response.data[0].code).toBe("PasswordMissingSpecialCharacter");
@@ -210,12 +222,13 @@ beforeAll( () => {
     });
 
     test('Регистрация: попытка создания пользователя c паролем не содержащим не одной цифры', async () => {
-       
+
         const userData = new UserDataBuilder()
-            .login(`login${getRandomInt()}@email.com`)
-            .password('Qwerty!')
-            .name("Max")
-            .role("client")
+            .withLogin(`login${getRandomInt()}@email.com`)
+            .withPassword('Qwerty!')
+            .withName("Max")
+            .withRole("client")
+            .build();
         const response = await Api.postRequest(path, userData);
         expect(response.status).toBe(400);
         expect(response.data[0].code).toBe("PasswordMissingDigit");
@@ -223,12 +236,13 @@ beforeAll( () => {
     });
 
     test('Регистрация: попытка создания пользователя c ролью не client и не renter', async () => {
-       
+
         const userData = new UserDataBuilder()
-            .login(`login${getRandomInt()}@email.com`)
-            .password('Qwerty123!')
-            .name("Max")
-            .role("seller")
+            .withLogin(`login${getRandomInt()}@email.com`)
+            .withPassword('Qwerty123!')
+            .withName("Max")
+            .withRole("seller")
+            .build();
         const response = await Api.postRequest(path, userData);
         expect(response.status).toBe(400);
         expect(response.data[0].code).toBe("InvalidRole");
@@ -236,12 +250,13 @@ beforeAll( () => {
     });
 
     test('Регистрация: попытка создания пользователя с пустым полем login', async () => {
-       
+
         const userData = new UserDataBuilder()
-            .login(``)
-            .password('Qwerty123!')
-            .name("Max")
-            .role("client")
+            .withLogin(``)
+            .withPassword('Qwerty123!')
+            .withName("Max")
+            .withRole("client")
+            .build();
         const response = await Api.postRequest(path, userData);
         expect(response.status).toBe(400);
         expect(response.data.code).toBe("ModelException");
@@ -249,12 +264,13 @@ beforeAll( () => {
     });
 
     test('Регистрация: попытка создания пользователя с пустым полем password', async () => {
-       
+
         const userData = new UserDataBuilder()
-            .login(`login${getRandomInt()}@email.com`)
-            .password('')
-            .name("Max")
-            .role("client")
+            .withLogin(`login${getRandomInt()}@email.com`)
+            .withPassword('')
+            .withName("Max")
+            .withRole("client")
+            .build();
         const response = await Api.postRequest(path, userData);
         expect(response.status).toBe(400);
         expect(response.data.code).toBe("ModelException");
@@ -262,12 +278,13 @@ beforeAll( () => {
     });
 
     test('Регистрация: попытка создания пользователя с пустым полем name', async () => {
-       
+
         const userData = new UserDataBuilder()
-            .login(`login${getRandomInt()}@email.com`)
-            .password('Qwerty123!')
-            .name("")
-            .role("client")
+            .withLogin(`login${getRandomInt()}@email.com`)
+            .withPassword('Qwerty123!')
+            .withName("")
+            .withRole("client")
+            .build();
         const response = await Api.postRequest(path, userData);
         expect(response.status).toBe(400);
         expect(response.data.code).toBe("ModelException");
@@ -275,12 +292,13 @@ beforeAll( () => {
     });
 
     test('Регистрация: попытка создания пользователя с пустым полем role', async () => {
-       
+
         const userData = new UserDataBuilder()
-            .login(`login${getRandomInt()}@email.com`)
-            .password('Qwerty123!')
-            .name("Max")
-            .role("")
+            .withLogin(`login${getRandomInt()}@email.com`)
+            .withPassword('Qwerty123!')
+            .withName("Max")
+            .withRole("")
+            .build();
         const response = await Api.postRequest(path, userData);
         expect(response.status).toBe(400);
         expect(response.data.code).toBe("ModelException");
@@ -288,12 +306,13 @@ beforeAll( () => {
     });
 
     test('Регистрация: попытка создания пользователя только с пробелом в login', async () => {
-       
+
         const userData = new UserDataBuilder()
-            .login(` `)
-            .password('Qwerty123!')
-            .name("Max")
-            .role("client")
+            .withLogin(` `)
+            .withPassword('Qwerty123!')
+            .withName("Max")
+            .withRole("client")
+            .build();
         const response = await Api.postRequest(path, userData);
         expect(response.status).toBe(400);
         expect(response.data.code).toBe("ModelException");
@@ -301,12 +320,13 @@ beforeAll( () => {
     });
 
     test('Регистрация: попытка создания пользователя только с пробелом в password', async () => {
-       
+
         const userData = new UserDataBuilder()
-            .login(`login${getRandomInt()}@email.com`)
-            .password(' ')
-            .name("Max")
-            .role("client")
+            .withLogin(`login${getRandomInt()}@email.com`)
+            .withPassword(' ')
+            .withName("Max")
+            .withRole("client")
+            .build();
         const response = await Api.postRequest(path, userData);
         expect(response.status).toBe(400);
         expect(response.data.code).toBe("ModelException");
@@ -314,12 +334,13 @@ beforeAll( () => {
     });
 
     test('Регистрация: попытка создания пользователя только с пробелом в name', async () => {
-       
+
         const userData = new UserDataBuilder()
-            .login(`login${getRandomInt()}@email.com`)
-            .password('Qwerty123!')
-            .name(" ")
-            .role("client")
+            .withLogin(`login${getRandomInt()}@email.com`)
+            .withPassword('Qwerty123!')
+            .withName(" ")
+            .withRole("client")
+            .build();
         const response = await Api.postRequest(path, userData);
         expect(response.status).toBe(400);
         expect(response.data.code).toBe("ModelException");
@@ -327,12 +348,13 @@ beforeAll( () => {
     });
 
     test('Регистрация: попытка создания пользователя только с пробелом в role', async () => {
-       
+
         const userData = new UserDataBuilder()
-            .login(`login${getRandomInt()}@email.com`)
-            .password('Qwerty123!')
-            .name("Max")
-            .role(" ")
+            .withLogin(`login${getRandomInt()}@email.com`)
+            .withPassword('Qwerty123!')
+            .withName("Max")
+            .withRole(" ")
+            .build();
         const response = await Api.postRequest(path, userData);
         expect(response.status).toBe(400);
         expect(response.data.code).toBe("ModelException");
@@ -340,12 +362,13 @@ beforeAll( () => {
     });
 
     test('Регистрация: попытка создания пользователя с количеством символов больше 50 в поле login', async () => {
-       
+
         const userData = new UserDataBuilder()
-            .login(`loginloginloginloginloginloginloginloginlogin${getRandomInt()}@email.com`)
-            .password('Qwerty123!')
-            .name("Max")
-            .role("client")
+            .withLogin(`loginloginloginloginloginloginloginloginlogin${getRandomInt()}@email.com`)
+            .withPassword('Qwerty123!')
+            .withName("Max")
+            .withRole("client")
+            .build();
         const response = await Api.postRequest(path, userData);
         expect(response.status).toBe(400);
         expect(response.data[0].code).toBe("EmailIsTooLong");
@@ -353,12 +376,13 @@ beforeAll( () => {
     });
 
     test('Регистрация: попытка создания пользователя с количеством символов больше 50 в поле password', async () => {
-       
+
         const userData = new UserDataBuilder()
-            .login(`login${getRandomInt()}@email.com`)
-            .password('Qwerty123!@Qwerty123!@Qwerty123!@Qwerty123!@Qwerty!')
-            .name("Max")
-            .role("client")
+            .withLogin(`login${getRandomInt()}@email.com`)
+            .withPassword('Qwerty123!@Qwerty123!@Qwerty123!@Qwerty123!@Qwerty!')
+            .withName("Max")
+            .withRole("client")
+            .build();
         const response = await Api.postRequest(path, userData);
         expect(response.status).toBe(400);
         expect(response.data[0].code).toBe("PasswordIsTooLong");
@@ -366,12 +390,13 @@ beforeAll( () => {
     });
 
     test('Регистрация: попытка создания пользователя с количеством символов больше 50 в поле name', async () => {
-       
+
         const userData = new UserDataBuilder()
-            .login(`login${getRandomInt()}@email.com`)
-            .password('Qwerty123!')
-            .name("MaxMaxMaxMaxMaxMaxMaxMaxMaxMaxMaxMaxMaxMaxMaxMaxMax")
-            .role("client")
+            .withLogin(`login${getRandomInt()}@email.com`)
+            .withPassword('Qwerty123!')
+            .withName("MaxMaxMaxMaxMaxMaxMaxMaxMaxMaxMaxMaxMaxMaxMaxMaxMax")
+            .withRole("client")
+            .build();
         const response = await Api.postRequest(path, userData);
         expect(response.status).toBe(400);
         expect(response.data[0].code).toBe("NameIsTooLong");
@@ -379,12 +404,13 @@ beforeAll( () => {
     });
 
     test('Регистрация: попытка создания пользователя с количеством символов больше 50 в поле role', async () => {
-       
+
         const userData = new UserDataBuilder()
-            .login(`login${getRandomInt()}@email.com`)
-            .password('Qwerty123!@')
-            .name("Max")
-            .role("clientclientclientclientclientclientclientclientttt")
+            .withLogin(`login${getRandomInt()}@email.com`)
+            .withPassword('Qwerty123!@')
+            .withName("Max")
+            .withRole("clientclientclientclientclientclientclientclientttt")
+            .build();
         const response = await Api.postRequest(path, userData);
         expect(response.status).toBe(400);
         expect(response.data[0].code).toBe("InvalidRole");
@@ -393,12 +419,13 @@ beforeAll( () => {
 
 
     test('Регистрация: проверка валидного запроса с 50 символами в поле login', async () => {
-       
+
         const userData = new UserDataBuilder()
-            .login(`loginloginloginloginloginloginloginlog${getRandomInt()}@email.com`)
-            .password('Qwerty123!')
-            .name("Max")
-            .role("client")
+            .withLogin(`loginloginloginloginloginloginloginlog${getRandomInt()}@email.com`)
+            .withPassword('Qwerty123!')
+            .withName("Max")
+            .withRole("client")
+            .build();
         const response = await Api.postRequest(path, userData);
 
         expect(response.status).toBe(200);
@@ -412,12 +439,13 @@ beforeAll( () => {
     });
 
     test('Регистрация: проверка валидного запроса с 50 символами в поле password', async () => {
-       
+
         const userData = new UserDataBuilder()
-            .login(`login${getRandomInt()}@email.com`)
-            .password('Qwerty123!Qwerty123!Qwerty123!Qwerty123!Qwerty123!!')
-            .name("Max")
-            .role("client")
+            .withLogin(`login${getRandomInt()}@email.com`)
+            .withPassword('Qwerty123!Qwerty123!Qwerty123!Qwerty123!Qwerty123!')
+            .withName("Max")
+            .withRole("client")
+            .build();
         const response = await Api.postRequest(path, userData);
 
         expect(response.status).toBe(200);
@@ -431,12 +459,13 @@ beforeAll( () => {
     });
 
     test('Регистрация: проверка валидного запроса с 50 символами в поле name', async () => {
-       
+
         const userData = new UserDataBuilder()
-            .login(`login${getRandomInt()}@email.com`)
-            .password('Qwerty123!')
-            .name("MaxMaxMaxMaxMaxMaxMaxMaxMaxMaxMaxMaxMaxMaxMaxMaxxx")
-            .role("client")
+            .withLogin(`login${getRandomInt()}@email.com`)
+            .withPassword('Qwerty123!')
+            .withName("MaxMaxMaxMaxMaxMaxMaxMaxMaxMaxMaxMaxMaxMaxMaxMaxxx")
+            .withRole("client")
+            .build();
         const response = await Api.postRequest(path, userData);
 
         expect(response.status).toBe(200);

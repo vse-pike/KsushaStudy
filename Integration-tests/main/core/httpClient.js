@@ -1,5 +1,5 @@
 const axios = require("axios");
-const {baseUrl} = require("./appSetings");
+const {baseUrl} = require("../config");
 const httpClient = axios.create({
     baseURL: baseUrl
 });

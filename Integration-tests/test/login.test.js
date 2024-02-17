@@ -12,15 +12,17 @@ test('Авторизация: проверка валидной комбинац
     const password = "Qwerty123!";
     const passwordHash = await generatePasswordHash(password);
     const userRecord = new UserRecordBuilder()
-        .UserId(uuid.v4())
-        .Name("Max")
-        .Login(`login${getRandomInt()}@email.com`)
-        .PasswordHash(passwordHash)
-        .Role("renter")
+        .withUserId(uuid.v4())
+        .withName("Max")
+        .withLogin(`login${getRandomInt()}@email.com`)
+        .withPasswordHash(passwordHash)
+        .withRole("renter")
+        .build();
     await setUserRecordToDatabase(client, userRecord);
     const userAuth = new UserAuthBuilder()
-        .login(userRecord.Login)
-        .password(password)
+        .withLogin(userRecord.Login)
+        .withPassword(password)
+        .build();
 
     const response = await Api.postRequest(path, userAuth);
     expect(response.status).toBe(200);
@@ -34,15 +36,17 @@ test('Авторизация: проверка accessToken на соответс
     const password = "Qwerty123!";
     const passwordHash = await generatePasswordHash(password);
     const userRecord = new UserRecordBuilder()
-        .UserId(uuid.v4())
-        .Name("Max")
-        .Login(`login${getRandomInt()}@email.com`)
-        .PasswordHash(passwordHash)
-        .Role("renter")
+        .withUserId(uuid.v4())
+        .withName("Max")
+        .withLogin(`login${getRandomInt()}@email.com`)
+        .withPasswordHash(passwordHash)
+        .withRole("renter")
+        .build();
     await setUserRecordToDatabase(client, userRecord);
     const userAuth = new UserAuthBuilder()
-        .login(userRecord.Login)
-        .password(password)
+        .withLogin(userRecord.Login)
+        .withPassword(password)
+        .build();
     const response = await Api.postRequest(path, userAuth);
     const userToken = await getUserAuthFromDatabase(client, userAuth.login);
     expect(response.data.accessToken).toBe(userToken.Token);
@@ -57,15 +61,17 @@ test('Авторизация: проверка времени жизни ток�
     let timeNow = new Date();
     timeNow.setMinutes(timeNow.getMinutes() + 15);
     const userRecord = new UserRecordBuilder()
-        .UserId(uuid.v4())
-        .Name("Max")
-        .Login(`login${getRandomInt()}@email.com`)
-        .PasswordHash(passwordHash)
-        .Role("renter")
+        .withUserId(uuid.v4())
+        .withName("Max")
+        .withLogin(`login${getRandomInt()}@email.com`)
+        .withPasswordHash(passwordHash)
+        .withRole("renter")
+        .build();
     await setUserRecordToDatabase(client, userRecord);
     const userAuth = new UserAuthBuilder()
-        .login(userRecord.Login)
-        .password(password)
+        .withLogin(userRecord.Login)
+        .withPassword(password)
+        .build();
 
     const response = await Api.postRequest(path, userAuth);
     const userToken = await getUserAuthFromDatabase(client, userAuth.login);
@@ -76,8 +82,9 @@ test('Авторизация: проверка времени жизни ток�
 test('Авторизация: попытка входа с несуществующим логином', async () => {
     const client = createDbClient();
     const userAuth = new UserAuthBuilder()
-        .login("non_existent@email.ru")
-        .password("Qwerty123!")
+        .withLogin("non_existent@email.ru")
+        .withPassword("Qwerty123!")
+        .build();
 
     const response = await Api.postRequest(path, userAuth);
     expect(response.status).toBe(400);
@@ -90,15 +97,17 @@ test('Авторизация: попытка входа с несуществу�
     const password = "Qwerty123!";
     const passwordHash = await generatePasswordHash(password);
     const userRecord = new UserRecordBuilder()
-        .UserId(uuid.v4())
-        .Name("Max")
-        .Login(`login${getRandomInt()}@email.com`)
-        .PasswordHash(passwordHash)
-        .Role("renter")
+        .withUserId(uuid.v4())
+        .withName("Max")
+        .withLogin(`login${getRandomInt()}@email.com`)
+        .withPasswordHash(passwordHash)
+        .withRole("renter")
+        .build();
     await setUserRecordToDatabase(client, userRecord);
     const userAuth = new UserAuthBuilder()
-        .login(userRecord.Login)
-        .password("Password123!!")
+        .withLogin(userRecord.Login)
+        .withPassword("Password123!!")
+        .build();
 
     const response = await Api.postRequest(path, userAuth);
     expect(response.status).toBe(400);
@@ -109,8 +118,9 @@ test('Авторизация: попытка входа с несуществу�
 test('Авторизация: попытка входа с пустым полем логин', async () => {
     const client = createDbClient();
     const userAuth = new UserAuthBuilder()
-        .login('')
-        .password("Password123!!")
+        .withLogin('')
+        .withPassword("Password123!!")
+        .build();
 
     const response = await Api.postRequest(path, userAuth);
     expect(response.status).toBe(400);
@@ -121,8 +131,9 @@ test('Авторизация: попытка входа с пустым поле
 test('Авторизация: попытка входа с пустым полем пароль', async () => {
     const client = createDbClient();
     const userAuth = new UserAuthBuilder()
-        .login("login@email.com")
-        .password("")
+        .withLogin("login@email.com")
+        .withPassword("")
+        .build();
 
     const response = await Api.postRequest(path, userAuth);
     expect(response.status).toBe(400);
@@ -133,8 +144,9 @@ test('Авторизация: попытка входа с пустым поле
 test('Авторизация: попытка входа с пробелом в качестве логина', async () => {
     const client = createDbClient();
     const userAuth = new UserAuthBuilder()
-        .login(" ")
-        .password("Qwerty123!")
+        .withLogin(" ")
+        .withPassword("Qwerty123!")
+        .build();
 
     const response = await Api.postRequest(path, userAuth);
     expect(response.status).toBe(400);
@@ -145,8 +157,9 @@ test('Авторизация: попытка входа с пробелом в �
 test('Авторизация: попытка входа с пробелом в качестве пароля', async () => {
     const client = createDbClient();
     const userAuth = new UserAuthBuilder()
-        .login("login@email.com")
-        .password(" ")
+        .withLogin("login@email.com")
+        .withPassword(" ")
+        .build();
 
     const response = await Api.postRequest(path, userAuth);
     expect(response.status).toBe(400);
@@ -161,21 +174,24 @@ test('Авторизация: проверка повторной авториз
     let timeNow = new Date();
     timeNow.setMinutes(timeNow.getMinutes() + 15);
     const userRecord = new UserRecordBuilder()
-        .UserId(uuid.v4())
-        .Name("Max")
-        .Login(`login${getRandomInt()}@email.com`)
-        .PasswordHash(passwordHash)
-        .Role("renter")
+        .withUserId(uuid.v4())
+        .withName("Max")
+        .withLogin(`login${getRandomInt()}@email.com`)
+        .withPasswordHash(passwordHash)
+        .withRole("renter")
+        .build();
     await setUserRecordToDatabase(client, userRecord);
 
     const userToken = new UserTokenBuilder()
-        .UserId(userRecord.UserId)
-        .Token(uuid.v4())
-        .ExpirationDateTime(timeNow)
+        .withUserId(userRecord.UserId)
+        .withToken(uuid.v4())
+        .withExpirationDateTime(timeNow)
+        .build();
     await setUserAuthToDatabase(client, userToken);
     const userAuth = new UserAuthBuilder()
-        .login(userRecord.Login)
-        .password(password)
+        .withLogin(userRecord.Login)
+        .withPassword(password)
+        .build();
 
     const response = await Api.postRequest(path, userAuth);
     expect(response.status).toBe(200);
