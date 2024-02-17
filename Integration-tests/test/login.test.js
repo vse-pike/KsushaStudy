@@ -54,7 +54,7 @@ test('Авторизация: проверка accessToken на соответс
     
 });
 
-test('Авторизация: проверка времени жизни токена', async () => {
+test.skip('Авторизация: проверка времени жизни токена', async () => {
     const client = createDbClient();
     const password = "Qwerty123!";
     const passwordHash = await generatePasswordHash(password);

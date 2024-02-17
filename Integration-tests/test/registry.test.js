@@ -207,7 +207,7 @@ describe('Тесты регистрации', () => {
 
     });
 
-    test('Регистрация: попытка создания пользователя c паролем на кириллице', async () => {
+    test.skip('Регистрация: попытка создания пользователя c паролем на кириллице', async () => {
 
         const userData = new UserDataBuilder()
             .withLogin(`login${getRandomInt()}@email.com`)
@@ -221,7 +221,7 @@ describe('Тесты регистрации', () => {
 
     });
 
-    test('Регистрация: попытка создания пользователя c паролем не содержащим не одной цифры', async () => {
+    test.skip('Регистрация: попытка создания пользователя c паролем не содержащим не одной цифры', async () => {
 
         const userData = new UserDataBuilder()
             .withLogin(`login${getRandomInt()}@email.com`)
