@@ -1,0 +1,17 @@
+name: integration-tests
+
+on:
+  push:
+    branches: ["*"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: setup-docker
+        uses: docker/setup-qemu-action@v3
+      - name: start-app
+        run: ./run-app.sh
+      - name: start-test
+        run: ./run-test.sh
