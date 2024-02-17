@@ -15,5 +15,11 @@ jobs:
         uses: docker/setup-qemu-action@v3
       - name: start-app
         run: ./run-app.sh
+      - name: sleep
+        uses: juliangruber/sleep-action@v2.0.0
+        with:
+          time: 10s
       - name: start-test
-        run: ./run-test.sh
+        run: |
+          chmod +x ./run-test.sh
+          ./run-test.sh
