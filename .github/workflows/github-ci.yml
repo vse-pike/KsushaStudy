@@ -1,0 +1,25 @@
+name: integration-tests
+
+on:
+  push:
+    branches: ["*"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout-repo
+        uses: actions/checkout@v3
+      - name: setup-docker
+        uses: docker/setup-qemu-action@v3
+      - name: start-app
+        run: ./run-app.sh
+      - name: sleep
+        uses: juliangruber/sleep-action@v2.0.0
+        with:
+          time: 10s
+      - name: start-test
+        run: |
+          chmod +x ./run-test.sh
+          ./run-test.sh

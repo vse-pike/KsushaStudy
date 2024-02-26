@@ -4,11 +4,14 @@ services:
   sso-app:
     depends_on: [ sso-postgres ]
     build:
+      context: .
       dockerfile: .docker/sso-app.Dockerfile
     ports:
       - "8080:8080"
     networks:
       - app
+    profiles:
+      - infra
   sso-postgres:
     image: postgres:15.3
     environment:
@@ -19,6 +22,18 @@ services:
       - "5432:5432"
     networks:
       - app
-
+    profiles:
+      - infra
+  test:
+    build:
+      context: .
+      dockerfile: .docker/test.Dockerfile
+    environment:
+      BASE_URL: "http://sso-app:8080"
+      DB_HOST: "sso-postgres"
+    networks:
+      - app
+    profiles:
+      - test
 networks:
   app:
